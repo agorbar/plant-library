@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasvirekisteri</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c5e3b;
+            margin-bottom: 30px;
+        }
+
+        #plants-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .plant-card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            width: 300px;
+            border-top: 6px solid #4CAF50;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .plant-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .plant-card h2 {
+            margin-top: 0;
+            color: #2c5e3b;
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .plant-card .species {
+            font-style: italic;
+            color: #777;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        .plant-card p {
+            margin: 8px 0;
+            line-height: 1.4;
+            font-size: 0.95em;
+        }
+
+        .plant-card strong {
+            color: #222;
+        }
+    </style>
+</head>
+<body>
+    <h1>Omat Kasvit</h1>
+    
+    <div id="plants-container">
+        <p>Ladataan kasveja...</p>
+    </div>
+
+    <script>
+      
+        fetch('http://localhost:3000/plants')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Verkkovirhe: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(plants => {
+                const container = document.getElementById('plants-container');
+                container.innerHTML = ''; 
+
+                if (plants.length === 0) {
+                    container.innerHTML = '<p>Ei kasveja löydetty.</p>';
+                    return;
+                }
+
+                
+                plants.forEach(plant => {
+                    const card = document.createElement('div');
+                    card.className = 'plant-card';
+
+                    card.innerHTML = `
+                        <h2>${plant.name}</h2>
+                        <div class="species">${plant.species}</div>
+                        <p><strong>Sijainti:</strong> ${plant.location || '-'}</p>
+                        <p><strong>Kastelutiheys:</strong> ${plant.watering_frequency || '-'}</p>
+                        <p><strong>Huomiot:</strong> ${plant.notes || '-'}</p>
+                    `;
+
+                    container.appendChild(card);
+                });
+            })
+            .catch(error => {
+                console.error('Virhe kasvien hakemisessa:', error);
+                const container = document.getElementById('plants-container');
+                container.innerHTML = `
+                    <p style="color: red; text-align: center;">
+                        Virhe ladattaessa kasveja. Varmista, että server.js on käynnissä portissa 3000.<br>
+                        (Jos avasit html-tiedoston suoraan selaimessa, saatat tarvita CORS-asetuksen päälle serverissä).
+                    </p>
+                `;
+            });
+    </script>
+</body>
+</html>
